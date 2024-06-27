@@ -61,7 +61,7 @@ jobs:
         id: meta
         with:
           images: |
-            ${{ vars.GIT_REPO }}
+            ${{ vars.IMAGE }}
           tags: |
             type=pep440,pattern=v{{major}},value=${{matrix.VERSION}}
             type=pep440,pattern=v{{major}}.{{minor}},value=${{matrix.VERSION}}
