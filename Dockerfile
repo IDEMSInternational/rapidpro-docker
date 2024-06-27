@@ -1,6 +1,6 @@
 FROM ghcr.io/praekeltfoundation/python-base-nw:3.9-bullseye as builder
 
-ENV PIP_RETRIES=120 \
+ENV PIP_NO_CACHE_DIR=1 \
     PIP_TIMEOUT=400 \
     PIP_DEFAULT_TIMEOUT=400 \
     C_FORCE_ROOT=1
@@ -14,7 +14,7 @@ ARG RAPIDPRO_REPO
 ENV RAPIDPRO_VERSION=${RAPIDPRO_VERSION:-master}
 ENV RAPIDPRO_REPO=${RAPIDPRO_REPO:-rapidpro/rapidpro}
 RUN echo "Downloading RapidPro ${RAPIDPRO_VERSION} from https://github.com/$RAPIDPRO_REPO/archive/${RAPIDPRO_VERSION}.tar.gz" && \
-    wget -O rapidpro.tar.gz "https://github.com/$RAPIDPRO_REPO/archive/${RAPIDPRO_VERSION}.tar.gz" && \
+    wget -O rapidpro.tar.gz "https://github.com/$RAPIDPRO_REPO/archive/refs/tags/${RAPIDPRO_VERSION}.tar.gz" && \
     tar -xf rapidpro.tar.gz --strip-components=1 && \
     rm rapidpro.tar.gz
 
@@ -26,7 +26,9 @@ ENV PATH="/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/venv"
 
 # Install configuration related dependencies
-RUN /venv/bin/pip install --upgrade pip && poetry install --no-interaction --no-dev && poetry add \
+RUN /venv/bin/pip install --upgrade pip
+RUN poetry install --no-interaction --only main
+RUN pip install  \
         "django-getenv==1.3.2" \
         "django-cache-url==3.2.3" \
         "uwsgi==2.0.20" \
