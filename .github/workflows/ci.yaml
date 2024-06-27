@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       python_version: "3.9.x"
-      IMAGE: ${{ vars.IMAGE }}
-      REPO: ${{ vars.GIT_REPO }}
       GREP_TIMEOUT: 360
     strategy:
       matrix:
@@ -38,13 +36,13 @@ jobs:
           push: false
           load: true
           context: .
-          tags: ${{ env.IMAGE }}
+          tags: ${{ vars.IMAGE }}
           build-args: |
             RAPIDPRO_VERSION=${{matrix.VERSION}}
-            RAPIDPRO_REPO=${{env.REPO}}
+            RAPIDPRO_REPO=${{ vars.GIT_REPO }}
       - name: Test Rapidpro Image
         run: |
-          docker run --name rapidpro --env-file docker.envfile --link postgis --publish 8000:8000 --detach "${{ env.IMAGE }}"
+          docker run --name rapidpro --env-file docker.envfile --link postgis --publish 8000:8000 --detach "${{ vars.IMAGE }}"
           timeout ${{ env.GREP_TIMEOUT }} grep -m 1 'static files copied' <(docker logs --follow rapidpro 2>&1)
           timeout ${{ env.GREP_TIMEOUT }} grep -m 1 'Running migrations' <(docker logs --follow rapidpro 2>&1)
           timeout ${{ env.GREP_TIMEOUT }} grep -m 1 'spawned uWSGI http 1' <(docker logs --follow rapidpro 2>&1)
@@ -63,7 +61,7 @@ jobs:
         id: meta
         with:
           images: |
-            ${{ env.REPO }}
+            ${{ vars.GIT_REPO }}
           tags: |
             type=pep440,pattern=v{{major}},value=${{matrix.VERSION}}
             type=pep440,pattern=v{{major}}.{{minor}},value=${{matrix.VERSION}}
@@ -81,4 +79,4 @@ jobs:
           context: .
           build-args: |
             RAPIDPRO_VERSION=${{matrix.VERSION}}
-            RAPIDPRO_REPO=${{env.REPO}}
+            RAPIDPRO_REPO=${{ vars.GIT_REPO }}
