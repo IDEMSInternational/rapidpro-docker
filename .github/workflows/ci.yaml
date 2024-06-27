@@ -3,7 +3,7 @@ name: Docker Image Tests
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 jobs:
@@ -11,16 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       python_version: "3.9.x"
-      IMAGE: praekeltfoundation/rapidpro
-      REGISTRY_USER: rapidproautomation
-      REPO: rapidpro/rapidpro
+      IMAGE: ${{ vars.IMAGE }}
+      REPO: ${{ vars.GIT_REPO }}
       GREP_TIMEOUT: 360
     strategy:
       matrix:
-        VERSION: [v7.0.4, v7.2.4]
+        VERSION: [v7.4.2]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python_version }}
       - name: Install PostgreSQL and PostGIS
@@ -32,9 +31,9 @@ jobs:
           postgresql user: temba
           postgresql password: temba
           postgresql arguments: "--jit=off"
-      - uses: docker/setup-buildx-action@v1
+      - uses: docker/setup-buildx-action@v3
       - name: Build Rapidpro Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           push: false
           load: true
@@ -60,29 +59,22 @@ jobs:
         run: |
           docker logs rapidpro
       - name: construct image metadata
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         id: meta
         with:
           images: |
-            praekeltfoundation/rapidpro
-            ghcr.io/praekeltfoundation/rapidpro-docker
+            ${{ env.REPO }}
           tags: |
             type=pep440,pattern=v{{major}},value=${{matrix.VERSION}}
             type=pep440,pattern=v{{major}}.{{minor}},value=${{matrix.VERSION}}
             type=pep440,pattern=v{{version}},value=${{matrix.VERSION}}
-      - name: login to ghcr
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{secrets.GITHUB_TOKEN}}
       - name: login to docker hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{secrets.DOCKER_USERNAME}}
           password: ${{secrets.DOCKER_PASSWORD}}
       - name: build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           push: ${{github.event_name != 'pull_request'}}
           tags: ${{steps.meta.outputs.tags}}
