@@ -41,9 +41,12 @@ _db = {
     "USER": os.getenv("DB_USER", "temba"),
 }
 DATABASES = {"default": _db, "readonly": _db.copy()}
+DEFAULT_FROM_EMAIL = os.getenv("EMAIL_DEFAULT_FROM")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT", "25")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "yes") == "yes"
+EMAIL_USER = os.getenv("EMAIL_USER")
+FLOW_FROM_EMAIL = os.getenv("EMAIL_FLOW_FROM")
 HOSTNAME = os.getenv("HOSTNAME", "localhost")
 ID_OBFUSCATION_KEY = tuple(get_env_as_list("ID_OBFUSCATION_KEY", ""))
 INTERNAL_IPS = ("127.0.0.1",)
