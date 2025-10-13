@@ -71,3 +71,5 @@ MAILROOM_URL = os.getenv("MAILROOM_URL", "http://mailroom:8090")
 MAILROOM_AUTH_TOKEN = os.getenv("MAILROOM_AUTH_TOKEN")
 SECRET_KEY = os.getenv("SECRET_KEY")
 STATIC_URL = "/static/"
+BRAND["domain"] = os.getenv("BRAND_DOMAIN")
+BRAND["emails"]["notifications"] = os.getenv("BRAND_EMAILS_NOTIFICATIONS")
