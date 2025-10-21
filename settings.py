@@ -1,7 +1,7 @@
 import os
 import warnings
 
-from .settings_common import *  # noqa
+from temba.settings_common import *  # noqa
 
 
 def get_env_as_list(key, default=None):
@@ -65,7 +65,11 @@ LOGGING = {
         },
     },
     "root": {"level": "INFO", "handlers": ["console"]},
-    "loggers": {"temba.api": {"level": "INFO", "handlers": ["console"]}},
+    "loggers": {
+        "gunicorn": {"level": "INFO", "handlers": ["console"], "propagate": True},
+        "django": {"level": "INFO", "handlers": ["console"]},
+        "temba": {"level": "INFO", "handlers": ["console"]},
+    },
 }
 MAILROOM_URL = os.getenv("MAILROOM_URL", "http://mailroom:8090")
 MAILROOM_AUTH_TOKEN = os.getenv("MAILROOM_AUTH_TOKEN")

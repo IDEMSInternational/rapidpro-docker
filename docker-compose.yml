@@ -16,6 +16,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx:/etc/nginx/templates
+      - letsencrypt:/etc/letsencrypt
       - static:/opt/idems/static:ro
 
   postgres:
@@ -24,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
       POSTGRES_USER: ${POSTGRES_USER}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
     image: postgis/postgis:17-3.6-alpine
@@ -105,15 +106,22 @@ services:
         condition: service_healthy
     environment: &rapidpro_env
       ALLOWED_HOSTS: "*"
+      BRAND_DOMAIN: ${DOMAIN:?}
+      BRAND_EMAILS_NOTIFICATIONS: ${BRAND_EMAILS_NOTIFICATIONS:?}
       CSRF_TRUSTED_ORIGINS: https://${DOMAIN:?}
       DB_HOST: postgres
       DB_NAME: ${POSTGRES_DB}
       DB_PASSWORD: ${POSTGRES_PASSWORD:?}
       DB_USER: ${POSTGRES_USER}
       DEBUG: "no"
-      EMAIL_HOST: mail
-      EMAIL_PORT: "1025"
-      EMAIL_USE_TLS: "no"
+      DJANGO_SETTINGS_MODULE: idems.settings
+      EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_FLOW_FROM: ${EMAIL_FLOW_FROM}
       GUNICORN_CMD_ARGS: ${GUNICORN_CMD_ARGS}
       HOSTNAME: ${DOMAIN:?}
       ID_OBFUSCATION_KEY: ${ID_OBFUSCATION_KEY:?}
@@ -126,6 +134,7 @@ services:
     image: ${RAPIDPRO_IMAGE_TAG}
     restart: unless-stopped
     volumes:
+      - ./settings.py:/rapidpro/idems/settings.py
       - static:/opt/idems/static
 
   celery:
@@ -141,6 +150,8 @@ services:
       test: celery -A temba inspect ping
     image: ${RAPIDPRO_IMAGE_TAG}
     restart: unless-stopped
+    volumes:
+      - ./settings.py:/rapidpro/idems/settings.py
 
   mailroom:
     build:
@@ -223,6 +234,8 @@ volumes:
   dynamo:
     driver: local
   elastic:
+    driver: local
+  letsencrypt:
     driver: local
   minio:
     driver: local
