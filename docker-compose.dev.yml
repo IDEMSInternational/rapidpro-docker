@@ -1,0 +1,14 @@
+name: idems_rp_dev
+services:
+  rapidpro:
+    build:
+      dockerfile: Dockerfile.dev
+    command: "poetry run python manage.py runserver 0.0.0.0:8000"
+    depends_on: !reset []
+    environment:
+      DEBUG: "yes"
+    image: "idems/rapidpro:dev"
+    ports:
+      - "8000:8000"
+    volumes: !override
+      - "../rapidpro:/rapidpro"

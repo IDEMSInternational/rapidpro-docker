@@ -1,0 +1,8 @@
+FROM python:3.12-trixie AS builder
+RUN apt-get update && apt-get install --yes --no-install-recommends libgdal36 nodejs npm
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="/root/.local/bin:$PATH"
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+RUN npm install -g n && n 20
+RUN npm install -g yarn less
+WORKDIR /rapidpro
