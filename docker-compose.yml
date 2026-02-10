@@ -90,7 +90,7 @@ services:
 
   rapidpro:
     build: &rapidpro_build
-      context: .
+      context: rapidpro
       args:
         - RAPIDPRO_TAG=v${RAPIDPRO_VERSION}
     depends_on:
@@ -130,11 +130,11 @@ services:
       REMOTE_CONTAINERS: "true"
       SECRET_KEY: ${SECRET_KEY:?}
     healthcheck:
+      interval: 5s
       test: python -c 'import requests; exit(0) if requests.get("http://localhost:8000/").ok else exit(1)'
     image: ${RAPIDPRO_IMAGE_TAG}
     restart: unless-stopped
     volumes:
-      - ./settings.py:/rapidpro/idems/settings.py
       - static:/opt/idems/static
 
   celery:
@@ -150,8 +150,6 @@ services:
       test: celery -A temba inspect ping
     image: ${RAPIDPRO_IMAGE_TAG}
     restart: unless-stopped
-    volumes:
-      - ./settings.py:/rapidpro/idems/settings.py
 
   mailroom:
     build:
