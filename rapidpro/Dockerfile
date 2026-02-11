@@ -14,8 +14,8 @@ WORKDIR /rapidpro
 RUN wget -O - "https://github.com/nyaruka/rapidpro/archive/${RAPIDPRO_TAG}.tar.gz" | tar -xzf - --strip-components=1
 RUN poetry install --no-root
 RUN yarn install
+COPY ./middleware.py /rapidpro/idems/
 COPY ./settings.py /rapidpro/temba/
-COPY ./middleware.py ./settings.py /rapidpro/idems/
 RUN python manage.py collectstatic --no-input
 
 FROM python:3.12-slim-trixie

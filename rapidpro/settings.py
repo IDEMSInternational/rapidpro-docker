@@ -53,21 +53,21 @@ ID_OBFUSCATION_KEY = tuple(get_env_as_list("ID_OBFUSCATION_KEY", ""))
 INTERNAL_IPS = ("127.0.0.1",)
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "%(levelname)s %(asctime)s %(module)s %(message)s"}
+        "verbose": {"format": "%(levelname)s %(asctime)s %(name)s %(message)s"}
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
     "loggers": {
-        "gunicorn": {"level": "INFO", "handlers": ["console"], "propagate": True},
         "django": {"level": "INFO", "handlers": ["console"]},
+        "django.request": {"level": "ERROR", "handlers": ["console"]},
+        "idems": {"level": "INFO", "handlers": ["console"]},
         "temba": {"level": "INFO", "handlers": ["console"]},
     },
 }
