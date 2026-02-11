@@ -19,7 +19,11 @@ class ExportDownloadMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
 
-        if isinstance(response, HttpResponseRedirect) and self.base_url:
+        if (
+            self.base_url
+            and request.path.startswith("/export/download/")
+            and isinstance(response, HttpResponseRedirect)
+        ):
             response["location"] = response["location"].replace(
                 self.s3_url, self.base_url
             )
