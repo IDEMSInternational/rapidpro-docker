@@ -60,12 +60,9 @@ services:
       - valkey:/data
 
   dynamo:
-    command: "-jar DynamoDBLocal.jar -sharedDb -port 6000"
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -v http://localhost:6000" ]
-      interval: 10s
-      timeout: 5s
-    image: amazon/dynamodb-local:3.1.0
+    build:
+      context: dynamodb
+    image: idems/dynamodb-local:3.1.0-1
     restart: unless-stopped
     volumes:
       - dynamo:/home/dynamodblocal/data
