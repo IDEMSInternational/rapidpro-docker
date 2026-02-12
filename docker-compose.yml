@@ -78,9 +78,9 @@ services:
       - "--console-address"
       - ":9001"
     environment:
+      DEFAULT_BUCKETS: temba-default,${S3_ATTACHMENTS_BUCKET},${S3_SESSION_BUCKET},temba-logs,temba-archives
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
-      MINIO_DEFAULT_BUCKETS: temba-default,${S3_ATTACHMENTS_BUCKET}:public,${S3_SESSION_BUCKET},temba-logs,temba-archives
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
     image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
