@@ -128,6 +128,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:?}
     healthcheck:
       interval: 5s
+      timeout: 5s
       test: python -c 'import requests; exit(0) if requests.get("http://localhost:8000/").ok else exit(1)'
     image: ${RAPIDPRO_IMAGE_TAG}
     restart: unless-stopped
@@ -150,8 +151,7 @@ services:
 
   mailroom:
     build:
-      context: https://github.com/nyaruka/mailroom.git#v10.2.0
-      dockerfile: Dockerfile
+      context: mailroom
     depends_on:
       rapidpro:
         condition: service_healthy
@@ -174,13 +174,12 @@ services:
       MAILROOM_S3_ATTACHMENTS_BUCKET: ${S3_ATTACHMENTS_BUCKET}
       MAILROOM_S3_MINIO: true
       MAILROOM_LOG_LEVEL: info
-    image: nyaruka/mailroom:stable
+    image: idems/mailroom:10.2.0-2
     restart: unless-stopped
 
   courier:
     build:
-      context: https://github.com/nyaruka/courier.git#v10.2.0
-      dockerfile: Dockerfile
+      context: courier
     depends_on:
       rapidpro:
         condition: service_healthy
@@ -199,13 +198,12 @@ services:
       COURIER_S3_ATTACHMENTS_BUCKET: ${S3_ATTACHMENTS_BUCKET}
       COURIER_S3_MINIO: true
       COURIER_LOG_LEVEL: info
-    image: nyaruka/courier:stable
+    image: idems/courier:10.2.0-2
     restart: unless-stopped
 
   indexer:
     build:
-      context: https://github.com/nyaruka/rp-indexer.git#v10.2.0
-      dockerfile: Dockerfile
+      context: rp-indexer
     depends_on:
       rapidpro:
         condition: service_healthy
@@ -213,7 +211,7 @@ services:
       INDEXER_DB: ${DB_CONNECTION_URL}
       INDEXER_ELASTIC_URL: ${ES_URL}
       INDEXER_LOG_LEVEL: info
-    image: nyaruka/indexer:stable
+    image: idems/rp-indexer:10.2.0-2
     restart: unless-stopped
 
   mail:
