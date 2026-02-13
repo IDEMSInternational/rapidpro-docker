@@ -150,7 +150,7 @@ services:
 
   mailroom:
     build:
-      context: https://github.com/nyaruka/mailroom.git#v10.2.0
+      context: ./mailroom
       dockerfile: Dockerfile
     depends_on:
       rapidpro:
@@ -179,7 +179,7 @@ services:
 
   courier:
     build:
-      context: https://github.com/nyaruka/courier.git#v10.2.0
+      context: ./courier.git
       dockerfile: Dockerfile
     depends_on:
       rapidpro:
@@ -204,7 +204,7 @@ services:
 
   indexer:
     build:
-      context: https://github.com/nyaruka/rp-indexer.git#v10.2.0
+      context: ./indexer
       dockerfile: Dockerfile
     depends_on:
       rapidpro:

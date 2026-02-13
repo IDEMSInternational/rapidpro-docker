@@ -1,0 +1,9 @@
+[submodule "courier"]
+	path = courier
+	url = https://github.com/nyaruka/courier.git
+[submodule "mailroom"]
+	path = mailroom
+	url = https://github.com/nyaruka/mailroom.git
+[submodule "rp-indexer"]
+	path = rp-indexer
+	url = https://github.com/nyaruka/rp-indexer.git
