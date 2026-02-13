@@ -179,7 +179,7 @@ services:
 
   courier:
     build:
-      context: ./courier.git
+      context: ./courier
       dockerfile: Dockerfile
     depends_on:
       rapidpro:
@@ -204,7 +204,7 @@ services:
 
   indexer:
     build:
-      context: ./indexer
+      context: ./rp-indexer
       dockerfile: Dockerfile
     depends_on:
       rapidpro:
