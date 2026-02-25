@@ -2,7 +2,7 @@ FROM golang:1.24 AS builder
 ARG TAG=v10.2.0
 WORKDIR /go/src
 RUN git clone --depth=1 --branch=${TAG} https://github.com/nyaruka/courier.git .
-RUN CGO_ENABLED=0 go build -a -o /go/bin/courier github.com/nyaruka/courier/cmd/courier
+RUN CGO_ENABLED=0 go build -tags timetzdata -a -o /go/bin/courier github.com/nyaruka/courier/cmd/courier
 
 FROM scratch
 ENV PATH=/bin
