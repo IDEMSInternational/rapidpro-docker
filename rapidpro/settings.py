@@ -80,3 +80,6 @@ BRAND["emails"]["notifications"] = os.getenv("BRAND_EMAILS_NOTIFICATIONS")
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 IDEMS_EXPORT_BASE_URL = f"https://{BRAND['domain']}/idems/export"
 MIDDLEWARE += ("idems.middleware.ExportDownloadMiddleware",)
+
+INSTALLED_APPS += ('rapidpro_gdpr',)
+APP_URLS.append('rapidpro_gdpr.urls') 
