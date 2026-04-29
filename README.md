@@ -32,14 +32,14 @@ Start courier, mailroom and rapidpro.
 docker compose up -d courier mailroom rapidpro
 ```
 
-Start everything else.
-```
-docker compose up -d
-```
-
 Copy static files for RapidPro web UI, making them available to the proxy.
 ```
 docker compose exec rapidpro cp -aT /rapidpro/sitestatic /opt/idems/static
+```
+
+Start everything else.
+```
+docker compose up -d
 ```
 
 In a web browser, visit https://localhost/accounts/signup/ and sign up. The verification email should be delivered to mailpit - the inbox is accessible via https://localhost:8025/ . Click on the confirmation link in the email to finish the sign up process.
