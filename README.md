@@ -55,3 +55,27 @@ To start all services again:
 ```
 docker compose up -d
 ```
+
+## Removing contacts
+
+A script for deleting contacts and all data related to them is included here. For the script to work, the following conditions must be met:
+
+- A contact group called "deletion request" must exist
+- A contact field called "deletion request time" of type "Date & Time" must exist
+
+The script will look for all active contact groups, with the name above, across all workspaces. Before deleting any contacts who are members of these groups, the script will extract the value of the "deletion request time" field for each contact, for reporting purposes.
+
+A report, in CSV format, will output to stdout, example below.
+
+```
+Workspace,Anonomous UUID,Request Type,Request Received,Request Completion,Related emails deleted,Partners notified of dataset update
+Company,2fcf265b-9f57-4fa5-8b07-5a52908c73c5,Deletion,2026-04-29T20:26:00+00:00,2026-04-29T20:36:16.450741,N/A,Pending
+```
+
+The recommended way to run the script is given below.
+
+```
+cat rapidpro/contact_delete.py | docker compose exec -T rapidpro python manage.py shell
+```
+
+A dry run can be achieved by commenting the line that performs the deletion i.e., `contact.release(...)`.
