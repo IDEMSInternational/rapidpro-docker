@@ -12,6 +12,9 @@ RUN npm install -g yarn less
 
 WORKDIR /rapidpro
 RUN wget -O - "https://github.com/nyaruka/rapidpro/archive/${RAPIDPRO_TAG}.tar.gz" | tar -xzf - --strip-components=1
+
+RUN git clone https://github.com/IDEMSInternational/rapidpro-gdpr.git /rapidpro/rapidpro_gdpr
+
 RUN poetry install --no-root
 RUN yarn install
 COPY ./middleware.py /rapidpro/idems/
