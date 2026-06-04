@@ -14,7 +14,7 @@ WORKDIR /rapidpro
 RUN wget -O - "https://github.com/nyaruka/rapidpro/archive/${RAPIDPRO_TAG}.tar.gz" | tar -xzf - --strip-components=1
 RUN poetry install --no-root
 RUN yarn install
-COPY ./middleware.py /rapidpro/idems/
+COPY ./contact_delete.py ./middleware.py /rapidpro/idems/
 COPY ./settings.py /rapidpro/temba/
 RUN python manage.py collectstatic --no-input
 
