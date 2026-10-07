@@ -22,6 +22,12 @@ Run database migration on DynamoDB.
 docker compose run --rm rapidpro python manage.py migrate_dynamo
 ```
 
+Create Elasticsearch indexes.
+```
+docker compose run --rm rapidpro python manage.py create_es_index contacts --replicas 0
+docker compose run --rm rapidpro python manage.py create_es_index messages --replicas 0
+```
+
 Create storage buckets.
 ```
 docker compose exec minio bash -eu -c 'mc alias set local http://localhost:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; readarray -d "," -t BUCKETS <<< ${DEFAULT_BUCKETS}; for b in ${BUCKETS[@]}; do mc mb -p local/${b}; done'
@@ -55,6 +61,45 @@ To start all services again:
 ```
 docker compose up -d
 ```
+
+## Upgrading from 10.2.x to 26.2.x
+
+RapidPro 26.2 is the first stable release in this setup to include the Turn.io WhatsApp channel type. The database can be migrated directly from 10.2.4.
+
+1. Update `.env`:
+    - Set `RAPIDPRO_VERSION=26.2.2` and `RAPIDPRO_IMAGE_TAG=idems/rapidpro:${RAPIDPRO_VERSION}-1`.
+    - Convert `ID_OBFUSCATION_KEY` from four comma separated integers to 32 hex characters, which is the format both RapidPro and Mailroom now expect, e.g.
+      ```
+      python3 -c "print(''.join('%08X' % int(x) for x in '123,456,789,101'.split(',')))"
+      ```
+    - Remove `S3_SESSION_BUCKET`, which is no longer used.
+    - RapidPro now uses `DYNAMO_TABLE_PREFIX` (previously it always used `Temba`), so make sure it names the DynamoDB tables that `migrate_dynamo` created.
+2. Stop everything and remove the retired rp-indexer container. Mailroom now writes to Elasticsearch itself.
+    ```
+    docker compose down --remove-orphans
+    ```
+3. Start supporting services. Elasticsearch is upgraded to 9.x and will upgrade its data volume in place. MinIO is replaced by [SILO](https://github.com/pgsty/silo), a community-maintained MinIO fork (upstream MinIO is archived and no longer publishes images), which uses the existing MinIO data volume as-is.
+    ```
+    docker compose up -d dynamo elastic minio postgres valkey
+    ```
+4. Run database migrations and create the new Elasticsearch indexes.
+    ```
+    docker compose run --rm rapidpro python manage.py migrate --no-input
+    docker compose run --rm rapidpro python manage.py migrate_dynamo
+    docker compose run --rm rapidpro python manage.py create_es_index contacts --replicas 0
+    docker compose run --rm rapidpro python manage.py create_es_index messages --replicas 0
+    ```
+5. Start courier, mailroom and RapidPro, then copy static files as in "Getting started".
+6. Populate the new contacts index (and optionally the messages index, for searching message history).
+    ```
+    docker compose run --rm mailroom mrindex contacts
+    docker compose run --rm mailroom mrindex messages
+    ```
+7. Start everything else with `docker compose up -d`.
+
+## Turn.io WhatsApp channel
+
+In a workspace, add a channel and choose "Turn.io WhatsApp". You will need the enterprise number, the Turn.io username and password, an access token for syncing message templates, and the template namespace. After claiming, give Turn.io the receive URL shown on the channel configuration page (`https://<domain>/c/trn/<uuid>/receive`).
 
 ## Removing contacts
 
