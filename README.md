@@ -73,7 +73,11 @@ RapidPro 26.2 is the first stable release in this setup to include the Turn.io W
       python3 -c "print(''.join('%08X' % int(x) for x in '123,456,789,101'.split(',')))"
       ```
     - Remove `S3_SESSION_BUCKET`, which is no longer used.
-    - RapidPro now uses `DYNAMO_TABLE_PREFIX` (previously it always used `Temba`), so make sure it names the DynamoDB tables that `migrate_dynamo` created.
+    - RapidPro now uses `DYNAMO_TABLE_PREFIX` (previously it always used `Temba`), so make sure it names the DynamoDB tables that `migrate_dynamo` created. To list the existing tables, run this before upgrading:
+      ```
+      docker compose exec rapidpro python manage.py shell -c "from temba.utils.dynamo import get_client; print([t.name for t in get_client().tables.all()])"
+      ```
+    - RapidPro now authenticates to MinIO with `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD`. Previously it always used the built-in defaults (`root` / `tembatemba`), so file uploads, contact imports and export downloads only worked if MinIO's password was exactly that. No change to `.env` is needed, but anything that was broken for this reason will start working.
 2. Stop everything and remove the retired rp-indexer container. Mailroom now writes to Elasticsearch itself.
     ```
     docker compose down --remove-orphans
@@ -96,6 +100,15 @@ RapidPro 26.2 is the first stable release in this setup to include the Turn.io W
     docker compose run --rm mailroom mrindex messages
     ```
 7. Start everything else with `docker compose up -d`.
+
+### Changes users will notice
+
+- In the contact list toolbar, the Archive and Block buttons have swapped places.
+- Deleting contacts now asks for confirmation.
+- A contact's history shows changes made by imports and edits.
+- New users enter the workspace name after confirming their email address, not on the sign-up form.
+- Flow imports run in the background and take a few seconds to finish.
+- After importing a flow that adds contacts to a group which the import itself creates, the flow editor may show "Cannot find a group for ...". The flow works correctly. The warning is left over from a check made while the import was still running, and it disappears the next time the flow is edited and saved.
 
 ## Turn.io WhatsApp channel
 
