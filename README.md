@@ -56,6 +56,13 @@ To start all services again:
 docker compose up -d
 ```
 
+## Object storage
+
+Upstream MinIO is archived and its images are no longer published, so the `minio` service runs [SILO](https://github.com/pgsty/silo), a community-maintained MinIO fork. SILO still reads the `MINIO_ROOT_*` variables, bundles the `mc` client and uses an existing MinIO data volume as-is, so an existing deployment can switch by pulling the new image and recreating the `minio` container.
+```
+docker compose up -d minio
+```
+
 ## Removing contacts
 
 A script for deleting contacts and all data related to them is included here. For the script to work, the following conditions must be met:
