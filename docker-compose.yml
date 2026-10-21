@@ -43,7 +43,8 @@ services:
       test: curl -s http://localhost:9200 >/dev/null || exit 1
       interval: 10s
       timeout: 5s
-    image: elasticsearch:8.19.4
+      start_period: 60s
+    image: elasticsearch:9.3.3
     restart: unless-stopped
     volumes:
       - elastic:/usr/share/elasticsearch/data
@@ -75,7 +76,7 @@ services:
       - "--console-address"
       - ":9001"
     environment:
-      DEFAULT_BUCKETS: temba-default,${S3_ATTACHMENTS_BUCKET},${S3_SESSION_BUCKET},temba-logs,temba-archives
+      DEFAULT_BUCKETS: temba-default,${S3_ATTACHMENTS_BUCKET},temba-logs,temba-archives
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
     healthcheck:
@@ -104,6 +105,9 @@ services:
         condition: service_healthy
     environment: &rapidpro_env
       ALLOWED_HOSTS: "*"
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?}
+      AWS_S3_ENDPOINT_URL: ${S3_URL}
       BRAND_DOMAIN: ${DOMAIN:?}
       BRAND_EMAILS_NOTIFICATIONS: ${BRAND_EMAILS_NOTIFICATIONS:?}
       CSRF_TRUSTED_ORIGINS: https://${DOMAIN:?}
@@ -113,6 +117,9 @@ services:
       DB_USER: ${POSTGRES_USER}
       DEBUG: "no"
       DJANGO_SETTINGS_MODULE: temba.settings
+      DYNAMO_ENDPOINT_URL: ${DYNAMO_URL}
+      DYNAMO_TABLE_PREFIX: ${DYNAMO_TABLE_PREFIX}
+      ELASTIC_ENDPOINT_URL: ${ES_URL}
       EMAIL_DEFAULT_FROM: ${EMAIL_DEFAULT_FROM}
       EMAIL_HOST: ${EMAIL_HOST}
       EMAIL_PORT: ${EMAIL_PORT}
@@ -124,7 +131,7 @@ services:
       HOSTNAME: ${DOMAIN:?}
       ID_OBFUSCATION_KEY: ${ID_OBFUSCATION_KEY:?}
       MAILROOM_AUTH_TOKEN: ${MAILROOM_AUTH_TOKEN:?}
-      MAILROOM_URL: http://mailroom:8090
+      MAILROOM_URL: http://mailroom:8091
       REMOTE_CONTAINERS: "true"
       SECRET_KEY: ${SECRET_KEY:?}
     healthcheck:
@@ -157,25 +164,27 @@ services:
       rapidpro:
         condition: service_healthy
     environment:
-      MAILROOM_ADDRESS: 0.0.0.0
+      MAILROOM_PUBLIC_ADDRESS: 0.0.0.0
+      MAILROOM_INTERNAL_ADDRESS: 0.0.0.0
       MAILROOM_DB: ${DB_CONNECTION_URL}
       MAILROOM_VALKEY: ${VALKEY_URL}
-      MAILROOM_ELASTIC: ${ES_URL}
+      MAILROOM_ELASTIC_ENDPOINT: ${ES_URL}
       MAILROOM_DOMAIN: ${DOMAIN:?}
       MAILROOM_ATTACHMENT_DOMAIN: ${MAILROOM_ATTACHMENT_DOMAIN}
       MAILROOM_DISALLOWED_NETWORKS: 6.6.6.6
       MAILROOM_AUTH_TOKEN: ${MAILROOM_AUTH_TOKEN:?}
       MAILROOM_COURIER_AUTH_TOKEN: ${COURIER_AUTH_TOKEN:?}
+      MAILROOM_COURIER_ENDPOINT: http://courier:8081
+      MAILROOM_ID_OBFUSCATION_KEY: ${ID_OBFUSCATION_KEY:?}
       MAILROOM_AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
       MAILROOM_AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?}
       MAILROOM_DYNAMO_ENDPOINT: ${DYNAMO_URL}
       MAILROOM_DYNAMO_TABLE_PREFIX: ${DYNAMO_TABLE_PREFIX}
       MAILROOM_S3_ENDPOINT: ${S3_URL}
-      MAILROOM_S3_SESSIONS_BUCKET: ${S3_SESSION_BUCKET}
       MAILROOM_S3_ATTACHMENTS_BUCKET: ${S3_ATTACHMENTS_BUCKET}
-      MAILROOM_S3_MINIO: true
+      MAILROOM_S3_PATH_STYLE: true
       MAILROOM_LOG_LEVEL: info
-    image: idems/mailroom:10.2.0-2
+    image: idems/mailroom:26.2.0-1
     restart: unless-stopped
 
   courier:
@@ -185,7 +194,8 @@ services:
       rapidpro:
         condition: service_healthy
     environment:
-      COURIER_ADDRESS: 0.0.0.0
+      COURIER_PUBLIC_ADDRESS: 0.0.0.0
+      COURIER_INTERNAL_ADDRESS: 0.0.0.0
       COURIER_DB: ${DB_CONNECTION_URL}
       COURIER_VALKEY: ${VALKEY_URL}
       COURIER_DOMAIN: ${DOMAIN:?}
@@ -197,22 +207,9 @@ services:
       COURIER_DYNAMO_TABLE_PREFIX: ${DYNAMO_TABLE_PREFIX}
       COURIER_S3_ENDPOINT: ${S3_URL}
       COURIER_S3_ATTACHMENTS_BUCKET: ${S3_ATTACHMENTS_BUCKET}
-      COURIER_S3_MINIO: true
+      COURIER_S3_PATH_STYLE: true
       COURIER_LOG_LEVEL: info
-    image: idems/courier:10.2.0-2
-    restart: unless-stopped
-
-  indexer:
-    build:
-      context: rp-indexer
-    depends_on:
-      rapidpro:
-        condition: service_healthy
-    environment:
-      INDEXER_DB: ${DB_CONNECTION_URL}
-      INDEXER_ELASTIC_URL: ${ES_URL}
-      INDEXER_LOG_LEVEL: info
-    image: idems/rp-indexer:10.2.0-2
+    image: idems/courier:26.2.1-1
     restart: unless-stopped
 
   mail:
